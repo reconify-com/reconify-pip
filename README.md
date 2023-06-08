@@ -22,7 +22,7 @@ pip install reconify
 
 ### Import the module
 ```python
-import reconify
+from reconify import reconifyOpenAIHandler
 ```
 
 ### Initialize the module
@@ -36,9 +36,9 @@ openai.api_key = 'YOUR_OPENAI_KEY'
 Configure the instance of Reconify passing the OpenAi instance along with the Reconify API_KEY and APP_KEY created above.
 
 ```python
-reconify.reconifyOpenAIHandler(openai, {
-   "appKey" : 'Your_App_Key', 
-   "apiKey" : 'Your_Api_Key'
+reconifyOpenAIHandler.config(openai, 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key'
 })
 ```
 
@@ -56,7 +56,7 @@ The user JSON should include a unique userId, all the other fields are optional.
 Without a unique userId, each user will be treated as a new user.
 
 ```python
-reconify.setUser ({
+reconifyOpenAIHandler.setUser ({
    "userId": "ABC123",
    "isAuthenticated": 1,
    "firstName": "Francis",
@@ -70,7 +70,7 @@ reconify.setUser ({
 #### Set a Session ID
 The Session ID is an alphanumeric string.
 ```python
-reconify.setSession('MySessionId')
+reconifyOpenAIHandler.setSession('MySessionId')
 ```
 
 ## Examples
@@ -80,13 +80,13 @@ reconify.setSession('MySessionId')
 ```python
 import os
 import openai
-import reconify 
+from reconify import reconifyOpenAIHandler
 
 openai.api_key = 'YOUR_OPENAI_KEY'
 
-reconify.reconifyOpenAIHandler(openai, {"appKey" : 'Your_App_Key', "apiKey" : 'Your_Api_Key'})
+reconifyOpenAIHandler.config(openai, 'Your_App_Key', 'Your_Api_Key')
 
-reconify.setUser({
+reconifyOpenAIHandler.setUser({
    "userId": "12345",
    "isAuthenticated": 1,
    "firstName": "Jim",
@@ -109,13 +109,13 @@ response = openai.ChatCompletion.create(
 ```python
 import os
 import openai
-import reconify 
+from reconify import reconifyOpenAIHandler
 
 openai.api_key = 'YOUR_OPENAI_KEY'
 
-reconify.reconifyOpenAIHandler(openai, {"appKey" : 'Your_App_Key', "apiKey" : 'Your_Api_Key'})
+reconifyOpenAIHandler.config(openai, 'Your_App_Key', 'Your_Api_Key'})
 
-reconify.setUser({
+reconifyOpenAIHandler.setUser({
    "userId": "12345",
    "isAuthenticated": 1,
    "firstName": "Jim",

@@ -43,8 +43,7 @@ def __logInteraction(input, output, timestampIn, timestampOut, type):
 
     return
 
-
-def reconifyOpenAIHandler (openai, config):
+def config (openai, appKey, apiKey, **options):
     global __appKey
     global __apiKey
     global __debug
@@ -52,16 +51,16 @@ def reconifyOpenAIHandler (openai, config):
     global __user
     global __session
 
-    __appKey = config.get('appKey', None)
-    __apiKey = config.get('apiKey', None)
+    __appKey = appKey
+    __apiKey = apiKey
     if __appKey is None or __apiKey is None:
         raise Exception('An appKey and apiKey are required')
     #optional overides
-    if 'debug' in config and config.get('debug') == True:
+    if 'debug' in options and options.get('debug') == True:
         __debug = True
 
-    if 'tracker' in config:
-        __tracker = config.get('tracker')
+    if 'tracker' in options:
+        __tracker = options.get('tracker')
 
     #override chat create
     openai.ChatCompletion.originalCreate = openai.ChatCompletion.create
