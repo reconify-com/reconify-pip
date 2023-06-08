@@ -25,20 +25,24 @@ pip install reconify
 import reconify
 ```
 
-### Create an instance
+### Initialize the module
 Prior to initializing the Reconify module, make sure to import the OpenaAI module.
 
 ```python
 import openai
+openai.api_key = 'YOUR_OPENAI_KEY'
 ```
 
 Configure the instance of Reconify passing the OpenAi instance along with the Reconify API_KEY and APP_KEY created above.
 
 ```python
-reconify.reconifyOpenAIHandler(openai, {"appKey" : 'Your_App_Key', "apiKey" : 'Your_Api_Key'})
+reconify.reconifyOpenAIHandler(openai, {
+   "appKey" : 'Your_App_Key', 
+   "apiKey" : 'Your_Api_Key'
+})
 ```
 
-This is all that is needed for a basic integration. The module takes care of sending the correct data to Reconify. 
+This is all that is needed for a basic integration. The module takes care of sending the correct data to Reconify when you call openai.Completion.create or openai.ChatCompletion.create. 
 
 There are additional optional parameters as well:
 
