@@ -18,5 +18,5 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/reconify-com/reconify#readme"
+"Homepage" = "https://github.com/reconify-com/reconify-pip#readme"
 "Bug Tracker" = "https://github.com/reconify-com/reconify-pip/issues"
