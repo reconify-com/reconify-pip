@@ -39,7 +39,7 @@ Configure the instance of Reconify passing the OpenAi instance along with the Re
 reconifyOpenAIHandler.config(openai, 
    appKey = 'Your_App_Key', 
    apiKey = 'Your_Api_Key'
-})
+)
 ```
 
 This is all that is needed for a basic integration. The module takes care of sending the correct data to Reconify when you call openai.Completion.create or openai.ChatCompletion.create. 
@@ -113,7 +113,7 @@ from reconify import reconifyOpenAIHandler
 
 openai.api_key = 'YOUR_OPENAI_KEY'
 
-reconifyOpenAIHandler.config(openai, 'Your_App_Key', 'Your_Api_Key'})
+reconifyOpenAIHandler.config(openai, 'Your_App_Key', 'Your_Api_Key')
 
 reconifyOpenAIHandler.setUser({
    "userId": "12345",
