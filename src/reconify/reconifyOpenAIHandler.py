@@ -68,7 +68,7 @@ def config (openai, appKey, apiKey, **options):
         tsIn = round(time.time()*1000)
         response = openai.ChatCompletion.originalCreate(*args, **kwargs)
         tsOut = round(time.time()*1000)
-        __logInteraction(kwargs, json.dumps(response), tsIn, tsOut, 'chat')
+        __logInteraction(kwargs, response, tsIn, tsOut, 'chat')
         return response 
     openai.ChatCompletion.create = __reconifyCreateChatCompletion 
 
@@ -78,7 +78,7 @@ def config (openai, appKey, apiKey, **options):
         tsIn = round(time.time()*1000)
         response = openai.Completion.originalCreate(*args, **kwargs)
         tsOut = round(time.time()*1000)
-        __logInteraction(kwargs, json.dumps(response), tsIn, tsOut, 'completion')
+        __logInteraction(kwargs, response, tsIn, tsOut, 'completion')
         return response 
     openai.Completion.create = __reconifyCreateCompletion
     return
