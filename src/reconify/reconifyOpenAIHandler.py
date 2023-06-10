@@ -12,6 +12,7 @@ __debug = False
 __tracker = RECONIFY_TRACKER
 __user = {}
 __session = ''
+__sessionTimeout = ''
 
 def __logInteraction(input, output, timestampIn, timestampOut, type):
     if __debug:
@@ -28,6 +29,7 @@ def __logInteraction(input, output, timestampIn, timestampOut, type):
         "response": output,
         "user": __user,
         "session": __session,
+        "sessionTimeout": __sessionTimeout,
         "timestamps": {
             "request": timestampIn,
             "response": timestampOut
@@ -50,6 +52,7 @@ def config (openai, appKey, apiKey, **options):
     global __tracker
     global __user
     global __session
+    global __sessionTimeout
 
     __appKey = appKey
     __apiKey = apiKey
@@ -90,3 +93,7 @@ def setUser(user):
 def setSession(session):
     global __session
     __session = session
+
+def setSessionTimeout(sessionTimeout):
+    global __sessionTimeout
+    __sessionTimeout = sessionTimeout
