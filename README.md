@@ -73,6 +73,12 @@ The Session ID is an alphanumeric string.
 reconifyOpenAIHandler.setSession('MySessionId')
 ```
 
+#### Set Session Timeout
+Set the session timeout in minutes to override the default
+```python
+reconifyOpenAIHandler.setSessionTimeout(15)
+```
+
 ## Examples
 
 ### Chat Example
