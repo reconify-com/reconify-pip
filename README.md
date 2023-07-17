@@ -44,7 +44,21 @@ reconifyOpenAIHandler.config(openai,
 
 This is all that is needed for a basic integration. The module takes care of sending the correct data to Reconify when you call openai.Completion.create or openai.ChatCompletion.create. 
 
-There are additional optional parameters as well:
+#### Optional Config Parameters 
+There are additional optional parameters that can be passed in to the handler. 
+
++ debug: (default False) Enable/Disable console logging
++ trackImages: (default True) Turn on/off tracking of createImage 
+
+For example:
+
+```python
+reconifyOpenAIHandler.config(openai, 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key',
+   debug = True
+)
+```
 
 ### Optional methods
 
@@ -134,5 +148,32 @@ response = openai.Completion.create(
    prompt = "write a haiku about cats",
    max_tokens = 100,
    temperature = 0,
+)
+```
+
+### Image Example
+
+```python
+import os
+import openai
+from reconify import reconifyOpenAIHandler
+
+openai.api_key = 'YOUR_OPENAI_KEY'
+
+reconifyOpenAIHandler.config(openai, 'Your_App_Key', 'Your_Api_Key')
+
+reconifyOpenAIHandler.setUser({
+   "userId": "12345",
+   "isAuthenticated": 1,
+   "firstName": "Jim",
+   "lastName": "Stand",
+   "gender": "male"
+})
+
+response = openai.Image.create(
+   prompt = "a cat on the moon",
+   n = 1,
+   size = "256x256"
+   response_format = "url"
 )
 ```
