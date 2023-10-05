@@ -98,7 +98,7 @@ reconifyOpenAIHandler.setSessionTimeout(15)
 
 ### Import the module
 ```python
-from reconify import reconifyBedrockHandler
+from reconify import reconifyBedrockRuntimeHandler
 ```
 
 ### Initialize the module
@@ -112,7 +112,7 @@ bedrock = boto3.client('bedrock-runtime')
 Configure the instance of Reconify passing the Bedrock Runtime instance along with the Reconify API_KEY and APP_KEY created above.
 
 ```python
-reconifyBedrockHandler.config(bedrock, 
+reconifyBedrockRuntimeHandler.config(bedrock, 
    appKey = 'Your_App_Key', 
    apiKey = 'Your_Api_Key'
 )
@@ -133,7 +133,7 @@ There are additional optional parameters that can be passed in to the handler.
 For example:
 
 ```python
-reconifyBedrockHandler.config(bedrock, 
+reconifyBedrockRuntimeHandler.config(bedrock, 
    appKey = 'Your_App_Key', 
    apiKey = 'Your_Api_Key',
    debug = True
@@ -150,7 +150,7 @@ The user JSON should include a unique userId, all the other fields are optional.
 Without a unique userId, each user will be treated as a new user.
 
 ```python
-reconifyBedrockHandler.setUser ({
+reconifyBedrockRuntimeHandler.setUser ({
    "userId": "ABC123",
    "isAuthenticated": 1,
    "firstName": "Francis",
@@ -164,13 +164,13 @@ reconifyBedrockHandler.setUser ({
 #### Set a Session ID
 The Session ID is an alphanumeric string.
 ```python
-reconifyBedrockHandler.setSession('MySessionId')
+reconifyBedrockRuntimeHandler.setSession('MySessionId')
 ```
 
 #### Set Session Timeout
 Set the session timeout in minutes to override the default
 ```python
-reconifyBedrockHandler.setSessionTimeout(15)
+reconifyBedrockRuntimeHandler.setSessionTimeout(15)
 ```
 
 ## Examples with OpenAI
@@ -264,11 +264,11 @@ response = openai.Image.create(
 
 ```python
 import boto3
-from reconify import reconifyBedrockHandler
+from reconify import reconifyBedrockRuntimeHandler
 
 bedrock = boto3.client('bedrock-runtime')
 
-reconifyBedrockHandler.config(bedrock, 'Your_App_Key', 'Your_Api_Key')
+reconifyBedrockRuntimeHandler.config(bedrock, 'Your_App_Key', 'Your_Api_Key')
 
 reconifyOpenAIHandler.setUser({
    "userId": "12345",
@@ -292,11 +292,11 @@ print(response.get("parsedBody"))
 
 ```python
 import boto3
-from reconify import reconifyBedrockHandler
+from reconify import reconifyBedrockRuntimeHandler
 
 bedrock = boto3.client('bedrock-runtime')
 
-reconifyBedrockHandler.config(bedrock, 'Your_App_Key', 'Your_Api_Key')
+reconifyBedrockRuntimeHandler.config(bedrock, 'Your_App_Key', 'Your_Api_Key')
 
 reconifyOpenAIHandler.setUser({
    "userId": "12345",

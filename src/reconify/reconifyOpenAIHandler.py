@@ -6,7 +6,7 @@ import uuid
 #constants
 RECONIFY_TRACKER = 'https://track.reconify.com/track'
 RECONIFY_UPLOADER = 'https://track.reconify.com/upload'
-RECONIFY_MODULE_VERSION = '1.0.3'
+RECONIFY_MODULE_VERSION = '1.0.4'
 
 #private variables 
 __appKey = None
