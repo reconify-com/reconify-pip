@@ -6,7 +6,7 @@ import uuid
 #constants
 RECONIFY_TRACKER = 'https://track.reconify.com/track'
 RECONIFY_UPLOADER = 'https://track.reconify.com/upload'
-RECONIFY_MODULE_VERSION = '1.0.4'
+RECONIFY_MODULE_VERSION = '1.0.5'
 
 #private variables 
 __appKey = None
@@ -72,7 +72,7 @@ def __logInteractionWithImageData(input, output, timestampIn, timestampOut, type
     for i in range(n):
         filenames.append(f"{randomId}-{_copy.get('created')}-{i}.png")
     _copy['data'] = filenames
-    __logInteraction(input, {'data':_copy}, timestampIn, timestampOut, type)
+    __logInteraction(input, _copy, timestampIn, timestampOut, type)
 
     #send each image
     for i in range(n):

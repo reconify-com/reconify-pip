@@ -6,7 +6,7 @@ import uuid
 #constants
 RECONIFY_TRACKER = 'https://track.reconify.com/track'
 RECONIFY_UPLOADER = 'https://track.reconify.com/upload'
-RECONIFY_MODULE_VERSION = '1.0.4'
+RECONIFY_MODULE_VERSION = '1.0.5'
 
 #private variables 
 __appKey = None
@@ -137,7 +137,7 @@ def __logInteractionWithImageData(input, output, timestampIn, timestampOut, type
         "upload": {
             "filename": images[i].get('filename'),
             "type": 'response-image',
-            'data': data[i].get('base64'),
+            'data': {'b64_json': data[i].get('base64')},
             'format': 'b64_json'
         }
         })
