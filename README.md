@@ -2,7 +2,8 @@
 
 The Reconify module is used for sending data to the Reconify platform at [www.reconify.com](https://www.reconify.com). 
 
-Currently the module supports processing and analyzing Chats and Completions from OpenAI. 
+Currently the module supports processing and analyzing Chats, Completions, and Images from OpenAI and the following foundational models using Amazon Bedrock: AI21 Jurassic, Anthropic Claude, Cohere Command, and Stability Stable Diffusion.
+
 Support for additional actions and providers will be added.
 
 ## Get started
@@ -18,7 +19,7 @@ which will be used in the code below to send data to Reconify.
 pip install reconify
 ```
 
-## Integrate the module in code
+## Integrate the module with OpenAI
 
 ### Import the module
 ```python
@@ -93,7 +94,86 @@ Set the session timeout in minutes to override the default
 reconifyOpenAIHandler.setSessionTimeout(15)
 ```
 
-## Examples
+## Integrate the module with Amazon Bedrock Runtime
+
+### Import the module
+```python
+from reconify import reconifyBedrockHandler
+```
+
+### Initialize the module
+Prior to initializing the Reconify module, make sure to import the Amazon boto3 module.
+
+```python
+import boto3
+bedrock = boto3.client('bedrock-runtime')
+```
+
+Configure the instance of Reconify passing the Bedrock Runtime instance along with the Reconify API_KEY and APP_KEY created above.
+
+```python
+reconifyBedrockHandler.config(bedrock, 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key'
+)
+```
+
+This is all that is needed for a basic integration. The module takes care of sending the correct data to Reconify when you call bedrock.invoke_model(). 
+
+#### Response handling
+
+When using the Reconify module, the response body from `invoke_model` will be converted from `botocore.response.StreamingBody` to JSON and saved in the response as `parsedBody`. See the examples below for more info. 
+
+#### Optional Config Parameters 
+There are additional optional parameters that can be passed in to the handler. 
+
++ debug: (default False) Enable/Disable console logging
++ trackImages: (default True) Turn on/off tracking of createImage 
+
+For example:
+
+```python
+reconifyBedrockHandler.config(bedrock, 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key',
+   debug = True
+)
+```
+
+### Optional methods
+
+You can optionally pass in a user object or session ID to be used in the analytics reporting. 
+The session ID will be used to group interactions together in the same session transcript.
+
+#### Set a user
+The user JSON should include a unique userId, all the other fields are optional. 
+Without a unique userId, each user will be treated as a new user.
+
+```python
+reconifyBedrockHandler.setUser ({
+   "userId": "ABC123",
+   "isAuthenticated": 1,
+   "firstName": "Francis",
+   "lastName": "Smith",
+   "email": "",
+   "phone": "",
+   "gender": "female"
+})
+```
+
+#### Set a Session ID
+The Session ID is an alphanumeric string.
+```python
+reconifyBedrockHandler.setSession('MySessionId')
+```
+
+#### Set Session Timeout
+Set the session timeout in minutes to override the default
+```python
+reconifyBedrockHandler.setSessionTimeout(15)
+```
+
+## Examples with OpenAI
 
 ### Chat Example
 
@@ -176,4 +256,62 @@ response = openai.Image.create(
    size = "256x256"
    response_format = "url"
 )
+```
+
+## Examples with Amazon Bedrock Runtime
+
+### Anthropic Claude example
+
+```python
+import boto3
+from reconify import reconifyBedrockHandler
+
+bedrock = boto3.client('bedrock-runtime')
+
+reconifyBedrockHandler.config(bedrock, 'Your_App_Key', 'Your_Api_Key')
+
+reconifyOpenAIHandler.setUser({
+   "userId": "12345",
+   "firstName": "Jane",
+   "lastName": "Smith"
+})
+
+response = bedrock.invoke_model(
+    modelId = "anthropic.claude-instant-v1",
+    contentType = "application/json",
+    accept = "application/json",
+    body = "{\"prompt\":\"\\n\\nHuman: Tell a cat joke.\\n\\nAssistant:\",\"max_tokens_to_sample\":300,\"temperature\":1,\"top_k\":250,\"top_p\":0.999,\"stop_sequences\":[\"\\n\\nHuman:\"],\"anthropic_version\":\"bedrock-2023-05-31\"}"
+)
+
+#The botocore.response.StreamingBody object will be converted to JSON and saved in parsedBody
+print(response.get("parsedBody"))
+
+```
+
+### Stable Diffusion image example
+
+```python
+import boto3
+from reconify import reconifyBedrockHandler
+
+bedrock = boto3.client('bedrock-runtime')
+
+reconifyBedrockHandler.config(bedrock, 'Your_App_Key', 'Your_Api_Key')
+
+reconifyOpenAIHandler.setUser({
+   "userId": "12345",
+   "firstName": "Jane",
+   "lastName": "Smith"
+})
+
+response = bedrock.invoke_model(
+    modelId = "stability.stable-diffusion-xl-v0",
+    contentType = "application/json",
+    accept = "application/json",
+    body = "{\"text_prompts\":[{\"text\":\"a cat drinking boba tea\"}],\"cfg_scale\":10,\"seed\":0,\"steps\":50}"
+)
+#The botocore.response.StreamingBody object will be converted to JSON and saved in parsedBody
+#The following will print out the image result in JSON base64
+print(response.get("parsedBody"))
+
 ```

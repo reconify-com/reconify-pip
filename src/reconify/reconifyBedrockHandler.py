@@ -22,16 +22,25 @@ __trackImages = True
 def __logInteraction(input, output, timestampIn, timestampOut, type):
     if __debug:
         print('Logging interaction')
+    
+    requestId = output.get("ResponseMetadata").get("RequestId")
+    #body = ''
+    #if 'body' in output:
+    #    body = json.loads(output.get("body").read().decode('utf-8'))
+    body = output.get("parsedBody")
     payload = {
         "reconify" :{
-            "format": 'openai',
+            "format": 'bedrock',
             "appKey": __appKey,
             "apiKey": __apiKey,
             "type": type,
             "version": RECONIFY_MODULE_VERSION,
         },
         "request": input,
-        "response": output,
+        "response": {
+            "requestId": requestId,
+            "body": body
+        },
         "user": __user,
         "session": __session,
         "sessionTimeout": __sessionTimeout,
@@ -65,36 +74,77 @@ def __logInteractionWithImageData(input, output, timestampIn, timestampOut, type
     if __debug:
         print('Logging interaction with image data')
 
-    _copy = output.copy()
-    n = len(_copy.get('data'))
-    filenames = []
+    requestId = output.get("ResponseMetadata").get("RequestId")
+    #body = ''
+    #if 'body' in output:
+    #    body = json.loads(output.get("body").read().decode('utf-8'))
+    body = output.get("parsedBody")
+    data = body.get('artifacts')
+    n = len(data)
+    images = []
     randomId = str(uuid.uuid4())
     for i in range(n):
-        filenames.append(f"{randomId}-{_copy.get('created')}-{i}.png")
-    _copy['data'] = filenames
-    __logInteraction(input, {'data':_copy}, timestampIn, timestampOut, type)
+        images.append(
+            {
+                "filename": f"{randomId}-{timestampIn}-{i}.png",
+                "seed": data[i].get("seed"),
+                "finishReason": data[i].get("finishReason")
+            }
+        )
+
+    payload = {
+        "reconify" :{
+            "format": 'bedrock',
+            "appKey": __appKey,
+            "apiKey": __apiKey,
+            "type": type,
+            "version": RECONIFY_MODULE_VERSION,
+        },
+        "request": input,
+        "response": {
+            "requestId": requestId,
+            "body": {
+                "images": images,
+                "format": 'b64_json'
+            }
+        },
+        "user": __user,
+        "session": __session,
+        "sessionTimeout": __sessionTimeout,
+        "timestamps": {
+            "request": timestampIn,
+            "response": timestampOut
+        },
+    }
+    if __debug:
+        print('Sending payload: ', payload)
+    try:
+        requests.post(__tracker, json=payload)
+    except requests.exceptions.RequestException as err:
+        if __debug:
+            print('Send error: ', err)    
 
     #send each image
     for i in range(n):
         __uploadImage({
         "reconify" :{
-            "format": 'openai',
+            "format": 'bedrock',
             "appKey": __appKey,
             "apiKey": __apiKey,
             "type": 'image_upload',
             "version": RECONIFY_MODULE_VERSION,
         },
         "upload": {
-            "filename": filenames[i],
+            "filename": images[i].get('filename'),
             "type": 'response-image',
-            'data': output.get('data')[i],
+            'data': data[i].get('base64'),
             'format': 'b64_json'
         }
         })
 
     return
 
-def config (openai, appKey, apiKey, **options):
+def config (bedrock, appKey, apiKey, **options):
     global __appKey
     global __apiKey
     global __debug
@@ -122,40 +172,28 @@ def config (openai, appKey, apiKey, **options):
     if 'trackImages' in options and options.get('trackImages') == False:
         __trackImages = False
 
-    #override chat create
-    openai.ChatCompletion.originalCreate = openai.ChatCompletion.create
-    def __reconifyCreateChatCompletion(*args, **kwargs):
+    #override invoke_model
+    bedrock.originalInvokeModel = bedrock.invoke_model
+    def __reconifyInvokeModel(**kwargs):
         tsIn = round(time.time()*1000)
-        response = openai.ChatCompletion.originalCreate(*args, **kwargs)
+        response = bedrock.originalInvokeModel(**kwargs)
         tsOut = round(time.time()*1000)
-        __logInteraction(kwargs, response, tsIn, tsOut, 'chat')
-        return response 
-    openai.ChatCompletion.create = __reconifyCreateChatCompletion 
-
-    #override completion create
-    openai.Completion.originalCreate = openai.Completion.create
-    def __reconifyCreateCompletion(*args, **kwargs):
-        tsIn = round(time.time()*1000)
-        response = openai.Completion.originalCreate(*args, **kwargs)
-        tsOut = round(time.time()*1000)
-        __logInteraction(kwargs, response, tsIn, tsOut, 'completion')
-        return response 
-    openai.Completion.create = __reconifyCreateCompletion
-
-    #override image create
-    openai.Image.originalCreateImage = openai.Image.create
-    def __reconifyCreateImage(*args, **kwargs):
-        tsIn = round(time.time()*1000)
-        response = openai.Image.originalCreateImage(*args, **kwargs)
-        tsOut = round(time.time()*1000)
-        if __trackImages:
-            if 'response_format' not in kwargs or kwargs.get('response_format') == 'url':
-                __logInteraction(kwargs, response, tsIn, tsOut, 'image')
-            else:
-                __logInteractionWithImageData(kwargs, response, tsIn, tsOut, 'image')
+        model = ''
+        if 'modelId' in kwargs:
+            model = kwargs.get('modelId')
         
+        if model.startswith('anthropic.') or model.startswith('ai21.') or model.startswith('cohere.'):
+            body = json.loads(response.get("body").read().decode('utf-8'))
+            response["parsedBody"] = body
+            __logInteraction(kwargs, response, tsIn, tsOut, 'chat')
+        elif model.startswith('stability.'): 
+            body = json.loads(response.get("body").read().decode('utf-8'))
+            response["parsedBody"] = body
+            __logInteractionWithImageData(kwargs, response, tsIn, tsOut, 'image')
+
         return response 
-    openai.Image.create = __reconifyCreateImage
+    bedrock.invoke_model = __reconifyInvokeModel 
+
     return
 
 def setUser(user):
