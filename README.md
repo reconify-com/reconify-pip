@@ -21,6 +21,8 @@ pip install reconify
 
 ## Integrate the module with OpenAI
 
+The following instructions are for OpenAI's Python SDK v1 or later (released in Nov 2023). For earlier versions of OpenAI's SDK, follow the [legacy instructions](https://www.reconify.com/docs/openai/legacy)
+
 ### Import the module
 ```python
 from reconify import reconifyOpenAIHandler
@@ -30,20 +32,20 @@ from reconify import reconifyOpenAIHandler
 Prior to initializing the Reconify module, make sure to import the OpenaAI module.
 
 ```python
-import openai
-openai.api_key = 'YOUR_OPENAI_KEY'
+from openai import OpenAI
+openai_client = OpenAI(api_key = 'YOUR_OPENAI_KEY')
 ```
 
 Configure the instance of Reconify passing the OpenAi instance along with the Reconify API_KEY and APP_KEY created above.
 
 ```python
-reconifyOpenAIHandler.config(openai, 
+reconifyOpenAIHandler.config(openai_client, 
    appKey = 'Your_App_Key', 
    apiKey = 'Your_Api_Key'
 )
 ```
 
-This is all that is needed for a basic integration. The module takes care of sending the correct data to Reconify when you call openai.Completion.create or openai.ChatCompletion.create. 
+This is all that is needed for a basic integration. The module takes care of sending the correct data to Reconify when you call openai_client.completions.create, openai_client.chat.completions.create, openai_client.images.generate. 
 
 #### Optional Config Parameters 
 There are additional optional parameters that can be passed in to the handler. 
@@ -54,7 +56,7 @@ There are additional optional parameters that can be passed in to the handler.
 For example:
 
 ```python
-reconifyOpenAIHandler.config(openai, 
+reconifyOpenAIHandler.config(openai_client, 
    appKey = 'Your_App_Key', 
    apiKey = 'Your_Api_Key',
    debug = True
@@ -178,13 +180,12 @@ reconifyBedrockRuntimeHandler.setSessionTimeout(15)
 ### Chat Example
 
 ```python
-import os
-import openai
+from openai import OpenAI
 from reconify import reconifyOpenAIHandler
 
-openai.api_key = 'YOUR_OPENAI_KEY'
+openai_client = OpenAI(api_key = 'YOUR_OPENAI_KEY')
 
-reconifyOpenAIHandler.config(openai, 'Your_App_Key', 'Your_Api_Key')
+reconifyOpenAIHandler.config(openai_client, 'Your_App_Key', 'Your_Api_Key')
 
 reconifyOpenAIHandler.setUser({
    "userId": "12345",
@@ -194,7 +195,7 @@ reconifyOpenAIHandler.setUser({
    "gender": "male"
 })
 
-response = openai.ChatCompletion.create(
+response = openai_client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "system", "content": "You are an expert on commedians."},
@@ -207,13 +208,12 @@ response = openai.ChatCompletion.create(
 ### Completion Example
 
 ```python
-import os
-import openai
+from openai import OpenAI
 from reconify import reconifyOpenAIHandler
 
-openai.api_key = 'YOUR_OPENAI_KEY'
+openai_client = OpenAI(api_key = 'YOUR_OPENAI_KEY')
 
-reconifyOpenAIHandler.config(openai, 'Your_App_Key', 'Your_Api_Key')
+reconifyOpenAIHandler.config(openai_client, 'Your_App_Key', 'Your_Api_Key')
 
 reconifyOpenAIHandler.setUser({
    "userId": "12345",
@@ -223,7 +223,7 @@ reconifyOpenAIHandler.setUser({
    "gender": "male"
 })
 
-response = openai.Completion.create(
+response = openai_client.completions.create(
    model = "text-davinci-003",
    prompt = "write a haiku about cats",
    max_tokens = 100,
@@ -234,13 +234,12 @@ response = openai.Completion.create(
 ### Image Example
 
 ```python
-import os
-import openai
+from openai import OpenAI
 from reconify import reconifyOpenAIHandler
 
-openai.api_key = 'YOUR_OPENAI_KEY'
+openai_client = OpenAI(api_key = 'YOUR_OPENAI_KEY')
 
-reconifyOpenAIHandler.config(openai, 'Your_App_Key', 'Your_Api_Key')
+reconifyOpenAIHandler.config(openai_client, 'Your_App_Key', 'Your_Api_Key')
 
 reconifyOpenAIHandler.setUser({
    "userId": "12345",
@@ -250,10 +249,12 @@ reconifyOpenAIHandler.setUser({
    "gender": "male"
 })
 
-response = openai.Image.create(
+response = openai_client.images.generate(
+   model = "dall-e-3",
    prompt = "a cat on the moon",
    n = 1,
-   size = "256x256"
+   size = "1024x1024",
+   quality="standard",
    response_format = "url"
 )
 ```

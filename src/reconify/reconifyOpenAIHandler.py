@@ -6,7 +6,12 @@ import uuid
 #constants
 RECONIFY_TRACKER = 'https://track.reconify.com/track'
 RECONIFY_UPLOADER = 'https://track.reconify.com/upload'
-RECONIFY_MODULE_VERSION = '1.0.5'
+RECONIFY_MODULE_VERSION = '2.0.0'
+
+#private class
+class __CompletionEncoder(json.JSONEncoder):
+    def default(self, o):
+        return o.__dict__
 
 #private variables 
 __appKey = None
@@ -22,6 +27,8 @@ __trackImages = True
 def __logInteraction(input, output, timestampIn, timestampOut, type):
     if __debug:
         print('Logging interaction')
+
+    json_output = json.loads(json.dumps(output, cls=__CompletionEncoder))
     payload = {
         "reconify" :{
             "format": 'openai',
@@ -31,7 +38,7 @@ def __logInteraction(input, output, timestampIn, timestampOut, type):
             "version": RECONIFY_MODULE_VERSION,
         },
         "request": input,
-        "response": output,
+        "response": json_output,
         "user": __user,
         "session": __session,
         "sessionTimeout": __sessionTimeout,
@@ -65,7 +72,8 @@ def __logInteractionWithImageData(input, output, timestampIn, timestampOut, type
     if __debug:
         print('Logging interaction with image data')
 
-    _copy = output.copy()
+    json_output = json.loads(json.dumps(output, cls=__CompletionEncoder))
+    _copy = json_output.copy()
     n = len(_copy.get('data'))
     filenames = []
     randomId = str(uuid.uuid4())
@@ -87,7 +95,7 @@ def __logInteractionWithImageData(input, output, timestampIn, timestampOut, type
         "upload": {
             "filename": filenames[i],
             "type": 'response-image',
-            'data': output.get('data')[i],
+            'data': json_output.get('data')[i],
             'format': 'b64_json'
         }
         })
@@ -123,30 +131,30 @@ def config (openai, appKey, apiKey, **options):
         __trackImages = False
 
     #override chat create
-    openai.ChatCompletion.originalCreate = openai.ChatCompletion.create
+    openai.chat.completions.originalCreate = openai.chat.completions.create
     def __reconifyCreateChatCompletion(*args, **kwargs):
         tsIn = round(time.time()*1000)
-        response = openai.ChatCompletion.originalCreate(*args, **kwargs)
+        response = openai.chat.completions.originalCreate(*args, **kwargs)
         tsOut = round(time.time()*1000)
         __logInteraction(kwargs, response, tsIn, tsOut, 'chat')
         return response 
-    openai.ChatCompletion.create = __reconifyCreateChatCompletion 
+    openai.chat.completions.create = __reconifyCreateChatCompletion 
 
     #override completion create
-    openai.Completion.originalCreate = openai.Completion.create
+    openai.completions.originalCreate = openai.completions.create
     def __reconifyCreateCompletion(*args, **kwargs):
         tsIn = round(time.time()*1000)
-        response = openai.Completion.originalCreate(*args, **kwargs)
+        response = openai.completions.originalCreate(*args, **kwargs)
         tsOut = round(time.time()*1000)
         __logInteraction(kwargs, response, tsIn, tsOut, 'completion')
         return response 
-    openai.Completion.create = __reconifyCreateCompletion
+    openai.completions.create = __reconifyCreateCompletion
 
     #override image create
-    openai.Image.originalCreateImage = openai.Image.create
+    openai.images.originalCreateImage = openai.images.generate
     def __reconifyCreateImage(*args, **kwargs):
         tsIn = round(time.time()*1000)
-        response = openai.Image.originalCreateImage(*args, **kwargs)
+        response = openai.images.originalCreateImage(*args, **kwargs)
         tsOut = round(time.time()*1000)
         if __trackImages:
             if 'response_format' not in kwargs or kwargs.get('response_format') == 'url':
@@ -155,7 +163,7 @@ def config (openai, appKey, apiKey, **options):
                 __logInteractionWithImageData(kwargs, response, tsIn, tsOut, 'image')
         
         return response 
-    openai.Image.create = __reconifyCreateImage
+    openai.images.generate = __reconifyCreateImage
     return
 
 def setUser(user):
