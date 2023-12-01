@@ -2,7 +2,11 @@
 
 The Reconify module is used for sending data to the Reconify platform at [www.reconify.com](https://www.reconify.com). 
 
-Currently the module supports processing and analyzing Chats, Completions, and Images from OpenAI and the following foundational models using Amazon Bedrock: AI21 Jurassic, Anthropic Claude, Cohere Command, and Stability Stable Diffusion.
+Currently the module supports processing and analyzing Chats, Completions, and Images from:
++ **[OpenAI](#integrate-the-module-with-openai)** 
++ **[Amazon Bedrock](#integrate-the-module-with-amazon-bedrock-runtime)**  (AI21 Jurassic, Anthropic Claude, Cohere Command, and Stability Stable Diffusion)
++ **[Anthropic](#integrate-the-module-with-anthropic)**
++ **[Cohere](#integrate-the-module-with-cohere)**
 
 Support for additional actions and providers will be added.
 
@@ -96,6 +100,8 @@ Set the session timeout in minutes to override the default
 reconifyOpenAIHandler.setSessionTimeout(15)
 ```
 
+See [Examples with OpenAI](#examples-with-openai)
+
 ## Integrate the module with Amazon Bedrock Runtime
 
 ### Import the module
@@ -154,12 +160,8 @@ Without a unique userId, each user will be treated as a new user.
 ```python
 reconifyBedrockRuntimeHandler.setUser ({
    "userId": "ABC123",
-   "isAuthenticated": 1,
    "firstName": "Francis",
-   "lastName": "Smith",
-   "email": "",
-   "phone": "",
-   "gender": "female"
+   "lastName": "Smith"
 })
 ```
 
@@ -174,6 +176,158 @@ Set the session timeout in minutes to override the default
 ```python
 reconifyBedrockRuntimeHandler.setSessionTimeout(15)
 ```
+
+See [Examples with Amazon Bedrock Runtime](#examples-with-bedrock-runtime)
+
+## Integrate the module with Anthropic
+
+The following instructions are for Anthropic's Python SDK.
+
+### Import the module
+```python
+from reconify import reconifyAnthropicHandler
+```
+
+### Initialize the module
+Prior to initializing the Reconify module, make sure to import the Anthropic module.
+
+```python
+from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
+anthropic = Anthropic(api_key = 'YOUR_ANTHROPIC_KEY')
+```
+
+Configure the instance of Reconify passing the Anthropic instance along with the Reconify API_KEY and APP_KEY created above.
+
+```python
+reconifyAnthropicHandler.config(anthropic, 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key'
+)
+```
+
+This is all that is needed for a basic integration. The module takes care of sending the correct data to Reconify. 
+
+#### Optional Config Parameters 
+There are additional optional parameters that can be passed in to the handler. 
+
++ debug: (default False) Enable/Disable console logging
++ trackImages: (default True) Turn on/off tracking of createImage 
+
+For example:
+
+```python
+reconifyAnthropicHandler.config(anthropic, 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key',
+   debug = True
+)
+```
+
+### Optional methods
+
+You can optionally pass in a user object or session ID to be used in the analytics reporting. 
+The session ID will be used to group interactions together in the same session transcript.
+
+#### Set a user
+The user JSON should include a unique userId, all the other fields are optional. 
+Without a unique userId, each user will be treated as a new user.
+
+```python
+reconifyAnthropicHandler.setUser ({
+   "userId": "ABC123",
+   "firstName": "Francis",
+   "lastName": "Smith"
+})
+```
+
+#### Set a Session ID
+The Session ID is an alphanumeric string.
+```python
+reconifyAnthropicHandler.setSession('MySessionId')
+```
+
+#### Set Session Timeout
+Set the session timeout in minutes to override the default
+```python
+reconifyAnthropicHandler.setSessionTimeout(15)
+```
+
+See [Examples with Anthropic](#examples-with-anthropic)
+
+## Integrate the module with Cohere
+
+The following instructions are for Cohere's Python SDK. 
+
+### Import the module
+```python
+from reconify import reconifyCohereHandler
+```
+
+### Initialize the module
+Prior to initializing the Reconify module, make sure to import the Cohere module.
+
+```python
+from cohere import Client
+cohere_client = Client('YOUR_COHERE_KEY')
+```
+
+Configure the instance of Reconify passing the Cohere instance along with the Reconify API_KEY and APP_KEY created above.
+
+```python
+reconifyCohereHandler.config(cohere_client, 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key'
+)
+```
+
+This is all that is needed for a basic integration. The module takes care of sending the correct data to Reconify. 
+
+#### Optional Config Parameters 
+There are additional optional parameters that can be passed in to the handler. 
+
++ debug: (default False) Enable/Disable console logging
++ trackImages: (default True) Turn on/off tracking of createImage 
+
+For example:
+
+```python
+reconifyCohereHandler.config(cohere_client, 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key',
+   debug = True
+)
+```
+
+### Optional methods
+
+You can optionally pass in a user object or session ID to be used in the analytics reporting. 
+The session ID will be used to group interactions together in the same session transcript.
+
+#### Set a user
+The user JSON should include a unique userId, all the other fields are optional. 
+Without a unique userId, each user will be treated as a new user.
+
+```python
+reconifyCohereHandler.setUser ({
+   "userId": "ABC123",
+   "firstName": "Francis",
+   "lastName": "Smith"
+})
+```
+
+#### Set a Session ID
+The Session ID is an alphanumeric string.
+```python
+reconifyCohereHandler.setSession('MySessionId')
+```
+
+#### Set Session Timeout
+Set the session timeout in minutes to override the default
+```python
+reconifyCohereHandler.setSessionTimeout(15)
+```
+
+See [Examples with Cohere](#examples-with-cohere)
 
 ## Examples with OpenAI
 
@@ -315,4 +469,76 @@ response = bedrock.invoke_model(
 #The following will print out the image result in JSON base64
 print(response.get("parsedBody"))
 
+```
+
+## Examples with Anthropic
+
+### Completions Example
+
+```python
+from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
+from reconify import reconifyAnthropicHandler
+
+anthropic = Anthropic(api_key = 'YOUR_ANTHROPIC_KEY')
+
+reconifyAnthropicHandler.config(anthropic, 'Your_App_Key', 'Your_Api_Key')
+
+reconifyAnthropicHandler.setUser({
+   "userId": "12345",
+   "firstName": "Jim",
+   "lastName": "Smith",
+})
+
+response = anthropic.completions.create(
+    model="claude-2",
+    max_tokens_to_sample=300,
+    prompt=f"{HUMAN_PROMPT} Tell me a good cat joke{AI_PROMPT}",
+)
+```
+
+## Examples with Cohere
+
+### Chat Example
+
+```python
+from cohere import Client
+from reconify import reconifyCohereHandler
+
+cohere_client = Client('YOUR_COHERE_KEY')
+
+reconifyCohereHandler.config(cohere_client, 'Your_App_Key', 'Your_Api_Key')
+
+reconifyCohereHandler.setUser({
+   "userId": "12345",
+   "firstName": "Jim",
+   "lastName": "Smith"
+})
+
+response = cohere_client.chat(
+    model="command",
+    message="tell me a good cat joke"
+)
+```
+
+### Generate Example
+
+```python
+from cohere import Client
+from reconify import reconifyCohereHandler
+
+cohere_client = Client('YOUR_COHERE_KEY')
+
+reconifyCohereHandler.config(cohere_client, 'Your_App_Key', 'Your_Api_Key')
+
+reconifyCohereHandler.setUser({
+   "userId": "12345",
+   "firstName": "Jim",
+   "lastName": "Smith"
+})
+
+response = cohere_client.generate(
+    model="command",
+    prompt="write a cat haiku",
+    max_tokens=300
+)
 ```

@@ -6,7 +6,7 @@ import uuid
 #constants
 RECONIFY_TRACKER = 'https://track.reconify.com/track'
 RECONIFY_UPLOADER = 'https://track.reconify.com/upload'
-RECONIFY_MODULE_VERSION = '2.0.0'
+RECONIFY_MODULE_VERSION = '2.1.0'
 
 #private class
 class __CompletionEncoder(json.JSONEncoder):
