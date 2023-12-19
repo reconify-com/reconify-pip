@@ -6,7 +6,7 @@ import uuid
 #constants
 RECONIFY_TRACKER = 'https://track.reconify.com/track'
 RECONIFY_UPLOADER = 'https://track.reconify.com/upload'
-RECONIFY_MODULE_VERSION = '2.1.0'
+RECONIFY_MODULE_VERSION = '2.2.0'
 
 #private variables 
 __appKey = None
@@ -74,12 +74,17 @@ def __logInteractionWithImageData(input, output, timestampIn, timestampOut, type
     if __debug:
         print('Logging interaction with image data')
 
+    model = input.get('modelId')
+
     requestId = output.get("ResponseMetadata").get("RequestId")
     #body = ''
     #if 'body' in output:
     #    body = json.loads(output.get("body").read().decode('utf-8'))
     body = output.get("parsedBody")
     data = body.get('artifacts')
+    if model.startswith('amazon.'):
+        data = list(map(lambda x: {'base64': x}, body.get('images')))
+
     n = len(data)
     images = []
     randomId = str(uuid.uuid4())
@@ -182,11 +187,11 @@ def config (bedrock, appKey, apiKey, **options):
         if 'modelId' in kwargs:
             model = kwargs.get('modelId')
         
-        if model.startswith('anthropic.') or model.startswith('ai21.') or model.startswith('cohere.'):
+        if model.startswith('anthropic.') or model.startswith('ai21.') or model.startswith('cohere.') or model.startswith('meta.') or model.startswith('amazon.titan-text'):
             body = json.loads(response.get("body").read().decode('utf-8'))
             response["parsedBody"] = body
             __logInteraction(kwargs, response, tsIn, tsOut, 'chat')
-        elif model.startswith('stability.'): 
+        elif model.startswith('stability.') or model.startswith('amazon.titan-image'): 
             body = json.loads(response.get("body").read().decode('utf-8'))
             response["parsedBody"] = body
             __logInteractionWithImageData(kwargs, response, tsIn, tsOut, 'image')
