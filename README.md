@@ -7,6 +7,7 @@ Currently the module supports processing and analyzing Chats, Completions, and I
 + **[Amazon Bedrock](#integrate-the-module-with-amazon-bedrock-runtime)**  (Amazon Titan, AI21 Jurassic, Anthropic Claude, Cohere Command, Meta LLama 2, and Stability Stable Diffusion)
 + **[Anthropic](#integrate-the-module-with-anthropic)**
 + **[Cohere](#integrate-the-module-with-cohere)**
++ **[Mistral](#integrate-the-module-with-mistral)**
 
 Support for additional actions and providers will be added.
 
@@ -329,6 +330,82 @@ reconifyCohereHandler.setSessionTimeout(15)
 
 See [Examples with Cohere](#examples-with-cohere)
 
+## Integrate the module with Mistral
+
+The following instructions are for Mistral's Python SDK. 
+
+### Import the module
+```python
+from reconify import reconifyMistralHandler
+```
+
+### Initialize the module
+Prior to initializing the Reconify module, make sure to import the Mistral module.
+
+```python
+from mistralai.client import MistralClient
+from mistralai.models.chat_completion import ChatMessage
+client = MistralClient(api_key = 'YOUR_MISTRAL_KEY')
+```
+
+Configure the instance of Reconify passing the Mistral instance along with the Reconify API_KEY and APP_KEY created above.
+
+```python
+reconifyMistralHandler.config(client, 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key'
+)
+```
+
+This is all that is needed for a basic integration. The module takes care of sending the correct data to Reconify. 
+
+#### Optional Config Parameters 
+There are additional optional parameters that can be passed in to the handler. 
+
++ debug: (default False) Enable/Disable console logging
++ trackImages: (default True) Turn on/off tracking of createImage 
+
+For example:
+
+```python
+reconifyMistralHandler.config(client, 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key',
+   debug = True
+)
+```
+
+### Optional methods
+
+You can optionally pass in a user object or session ID to be used in the analytics reporting. 
+The session ID will be used to group interactions together in the same session transcript.
+
+#### Set a user
+The user JSON should include a unique userId, all the other fields are optional. 
+Without a unique userId, each user will be treated as a new user.
+
+```python
+reconifyMistralHandler.setUser ({
+   "userId": "ABC123",
+   "firstName": "Francis",
+   "lastName": "Smith"
+})
+```
+
+#### Set a Session ID
+The Session ID is an alphanumeric string.
+```python
+reconifyMistralHandler.setSession('MySessionId')
+```
+
+#### Set Session Timeout
+Set the session timeout in minutes to override the default
+```python
+reconifyMistralHandler.setSessionTimeout(15)
+```
+
+See [Examples with Mistral](#examples-with-mistral)
+
 ## Examples with OpenAI
 
 ### Chat Example
@@ -540,5 +617,32 @@ response = cohere_client.generate(
     model="command",
     prompt="write a cat haiku",
     max_tokens=300
+)
+```
+
+## Examples with Mistral
+
+### Chat Example
+
+```python
+from mistralai.client import MistralClient
+from mistralai.models.chat_completion import ChatMessage
+from reconify import reconifyMistralHandler
+
+client = MistralClient(api_key = 'YOUR_MISTRAL_KEY')
+
+reconifyMistralHandler.config(client, 'Your_App_Key', 'Your_Api_Key')
+
+reconifyMistralHandler.setUser({
+   "userId": "12345",
+   "firstName": "Jim",
+   "lastName": "Smith"
+})
+
+response = client.chat(
+    model="mistral-tiny",
+    messages=[
+      ChatMessage(role="user", content="Tell me a cat joke")
+    ]
 )
 ```

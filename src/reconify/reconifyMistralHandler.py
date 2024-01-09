@@ -11,10 +11,11 @@ RECONIFY_MODULE_VERSION = '2.3.0'
 #private class
 class __CompletionEncoder(json.JSONEncoder):
     def default(self, o):
-        return o.__dict__
+        if hasattr(o, '__dict__'):
+            return o.__dict__
 
 #private variables 
-__format = 'anthropic'
+__format = 'mistral'
 __appKey = None
 __apiKey = None
 __debug = False
@@ -29,6 +30,7 @@ def __logInteraction(input, output, timestampIn, timestampOut, type):
     if __debug:
         print('Logging interaction')
 
+    json_input = json.loads(json.dumps(input, cls=__CompletionEncoder))
     json_output = json.loads(json.dumps(output, cls=__CompletionEncoder))
     payload = {
         "reconify" :{
@@ -38,7 +40,7 @@ def __logInteraction(input, output, timestampIn, timestampOut, type):
             "type": type,
             "version": RECONIFY_MODULE_VERSION,
         },
-        "request": input,
+        "request": json_input,
         "response": json_output,
         "user": __user,
         "session": __session,
@@ -58,7 +60,8 @@ def __logInteraction(input, output, timestampIn, timestampOut, type):
 
     return
 
-def config (anthropic, appKey, apiKey, **options):
+
+def config (client, appKey, apiKey, **options):
     global __appKey
     global __apiKey
     global __debug
@@ -86,16 +89,16 @@ def config (anthropic, appKey, apiKey, **options):
     if 'trackImages' in options and options.get('trackImages') == False:
         __trackImages = False
 
-
-    #override completion create
-    anthropic.completions.originalCreate = anthropic.completions.create
-    def __reconifyCompletion(*args, **kwargs):
+    #override chat 
+    client.originalChat = client.chat
+    def __reconifyChat(*args, **kwargs):
         tsIn = round(time.time()*1000)
-        response = anthropic.completions.originalCreate(*args, **kwargs)
+        response = client.originalChat(*args, **kwargs)
         tsOut = round(time.time()*1000)
         __logInteraction(kwargs, response, tsIn, tsOut, 'chat')
         return response 
-    anthropic.completions.create = __reconifyCompletion
+    client.chat = __reconifyChat 
+
 
 def setUser(user):
     global __user
