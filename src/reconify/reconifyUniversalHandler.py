@@ -11,11 +11,10 @@ RECONIFY_MODULE_VERSION = '2.3.1'
 #private class
 class __CompletionEncoder(json.JSONEncoder):
     def default(self, o):
-        if hasattr(o, '__dict__'):
-            return o.__dict__
+        return o.__dict__
 
 #private variables 
-__format = 'mistral'
+__format = 'universal'
 __appKey = None
 __apiKey = None
 __debug = False
@@ -26,12 +25,19 @@ __session = ''
 __sessionTimeout = ''
 __trackImages = True
 
+def __convertToJson(str):
+    try:
+        json.loads(str)
+        return json.loads(str)
+    except json.JSONDecodeError:
+        return str
+
 def __logInteraction(input, output, timestampIn, timestampOut, type):
     if __debug:
         print('Logging interaction')
 
-    json_input = json.loads(json.dumps(input, cls=__CompletionEncoder))
-    json_output = json.loads(json.dumps(output, cls=__CompletionEncoder))
+    #json_output = json.loads(json.dumps(output, cls=__CompletionEncoder))
+    json_output = __convertToJson(output)
     payload = {
         "reconify" :{
             "format": __format,
@@ -40,7 +46,7 @@ def __logInteraction(input, output, timestampIn, timestampOut, type):
             "type": type,
             "version": RECONIFY_MODULE_VERSION,
         },
-        "request": json_input,
+        "request": input,
         "response": json_output,
         "user": __user,
         "session": __session,
@@ -60,8 +66,7 @@ def __logInteraction(input, output, timestampIn, timestampOut, type):
 
     return
 
-
-def config (client, appKey, apiKey, **options):
+def config (appKey, apiKey, **options):
     global __appKey
     global __apiKey
     global __debug
@@ -89,16 +94,7 @@ def config (client, appKey, apiKey, **options):
     if 'trackImages' in options and options.get('trackImages') == False:
         __trackImages = False
 
-    #override chat 
-    client.originalChat = client.chat
-    def __reconifyChat(*args, **kwargs):
-        tsIn = round(time.time()*1000)
-        response = client.originalChat(*args, **kwargs)
-        tsOut = round(time.time()*1000)
-        __logInteraction(kwargs, response, tsIn, tsOut, 'chat')
-        return response 
-    client.chat = __reconifyChat 
-
+    
 
 def setUser(user):
     global __user
@@ -111,3 +107,10 @@ def setSession(session):
 def setSessionTimeout(sessionTimeout):
     global __sessionTimeout
     __sessionTimeout = sessionTimeout
+
+def getTimestamp():
+    return round(time.time()*1000)
+    
+def logChat(request, response, startTimestamp, endTimeStamp):    
+    __logInteraction(request, response, startTimestamp, endTimeStamp, 'chat')
+    return

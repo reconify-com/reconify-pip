@@ -8,6 +8,7 @@ Currently the module supports processing and analyzing Chats, Completions, and I
 + **[Anthropic](#integrate-the-module-with-anthropic)**
 + **[Cohere](#integrate-the-module-with-cohere)**
 + **[Mistral](#integrate-the-module-with-mistral)**
++ **[Perplexity](#integrate-the-module-with-perplexity)**
 
 Support for additional actions and providers will be added.
 
@@ -406,6 +407,95 @@ reconifyMistralHandler.setSessionTimeout(15)
 
 See [Examples with Mistral](#examples-with-mistral)
 
+## Integrate the module with Perplexity
+
+The following instructions are for Perplexity. 
+
+### Import the module
+```python
+from reconify import reconifyUniversalHandler
+```
+
+### Initialize the module
+
+Configure the instance of Reconify passing the Reconify API_KEY and APP_KEY created above.
+
+```python
+reconifyUniversalHandler.config( 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key'
+)
+```
+
+After making a call to the Perplexity, send the input parameters and response data to Reconify, along with the start and end time stamps.
+
+```python
+input = {
+    "model":"pplx-7b-chat",
+    "messages":[
+        {"role": "system", "content": "You are a comic"},
+        {"role": "user", "content": "Tell a cat joke"},
+    ]
+}
+
+start = reconifyUniversalHandler.getTimestamp()
+response = requests.post("https://api.perplexity.ai/chat/completions", json=input, headers = {
+    "accept":"application/json",
+    "content-type":"application/json",
+    "authorization": "Bearer YOUR_PERPLEXITY_KEY"
+})
+end = reconifyUniversalHandler.getTimestamp()
+
+reconifyUniversalHandler.logChat(input, response.text, start, end)
+```
+
+#### Optional Config Parameters 
+There are additional optional parameters that can be passed in to the handler. 
+
++ debug: (default False) Enable/Disable console logging
++ trackImages: (default True) Turn on/off tracking of createImage 
+
+For example:
+
+```python
+reconifyUniversalHandler.config(client, 
+   appKey = 'Your_App_Key', 
+   apiKey = 'Your_Api_Key',
+   debug = True
+)
+```
+
+### Optional methods
+
+You can optionally pass in a user object or session ID to be used in the analytics reporting. 
+The session ID will be used to group interactions together in the same session transcript.
+
+#### Set a user
+The user JSON should include a unique userId, all the other fields are optional. 
+Without a unique userId, each user will be treated as a new user.
+
+```python
+reconifyUniversalHandler.setUser ({
+   "userId": "ABC123",
+   "firstName": "Francis",
+   "lastName": "Smith"
+})
+```
+
+#### Set a Session ID
+The Session ID is an alphanumeric string.
+```python
+reconifyUniversalHandler.setSession('MySessionId')
+```
+
+#### Set Session Timeout
+Set the session timeout in minutes to override the default
+```python
+reconifyUniversalHandler.setSessionTimeout(15)
+```
+
+See [Examples with Perplexity](#examples-with-perplexity)
+
 ## Examples with OpenAI
 
 ### Chat Example
@@ -645,4 +735,41 @@ response = client.chat(
       ChatMessage(role="user", content="Tell me a cat joke")
     ]
 )
+```
+
+## Examples with Perplexity
+
+### Chat Example
+
+```python
+import requests
+from reconify import reconifyUniversalHandler
+
+reconifyUniversalHandler.config('Your_App_Key', 'Your_Api_Key')
+
+reconifyUniversalHandler.setUser({
+   "userId": "12345",
+   "firstName": "Jim",
+   "lastName": "Smith"
+})
+
+input = {
+    "model":"pplx-7b-chat",
+    "messages":[
+        {"role": "system", "content": "You are a comic"},
+        {"role": "user", "content": "Tell a cat joke"},
+    ]
+}
+
+start = reconifyUniversalHandler.getTimestamp()
+
+response = requests.post("https://api.perplexity.ai/chat/completions", json=input, headers = {
+    "accept":"application/json",
+    "content-type":"application/json",
+    "authorization": "Bearer YOUR_PERPLEXITY_KEY"
+})
+
+end = reconifyUniversalHandler.getTimestamp()
+
+reconifyUniversalHandler.logChat(input, response.text, start, end)
 ```

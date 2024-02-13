@@ -6,7 +6,7 @@ import uuid
 #constants
 RECONIFY_TRACKER = 'https://track.reconify.com/track'
 RECONIFY_UPLOADER = 'https://track.reconify.com/upload'
-RECONIFY_MODULE_VERSION = '2.3.0'
+RECONIFY_MODULE_VERSION = '2.3.1'
 
 #private class
 class __CompletionEncoder(json.JSONEncoder):
@@ -14,6 +14,7 @@ class __CompletionEncoder(json.JSONEncoder):
         return o.__dict__
 
 #private variables 
+__format = 'openai'
 __appKey = None
 __apiKey = None
 __debug = False
@@ -31,7 +32,7 @@ def __logInteraction(input, output, timestampIn, timestampOut, type):
     json_output = json.loads(json.dumps(output, cls=__CompletionEncoder))
     payload = {
         "reconify" :{
-            "format": 'openai',
+            "format": __format,
             "appKey": __appKey,
             "apiKey": __apiKey,
             "type": type,
@@ -86,7 +87,7 @@ def __logInteractionWithImageData(input, output, timestampIn, timestampOut, type
     for i in range(n):
         __uploadImage({
         "reconify" :{
-            "format": 'openai',
+            "format": __format,
             "appKey": __appKey,
             "apiKey": __apiKey,
             "type": 'image_upload',
