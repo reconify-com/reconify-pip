@@ -4,7 +4,7 @@ The Reconify module is used for sending data to the Reconify platform at [www.re
 
 Currently the module supports processing and analyzing Chats, Completions, and Images from:
 + **[OpenAI](#integrate-the-module-with-openai)** 
-+ **[Amazon Bedrock](#integrate-the-module-with-amazon-bedrock-runtime)**  (Amazon Titan, AI21 Jurassic, Anthropic Claude, Cohere Command, Meta LLama 2, and Stability Stable Diffusion)
++ **[Amazon Bedrock](#integrate-the-module-with-amazon-bedrock-runtime)**  (Amazon Titan, AI21 Jurassic, Anthropic Claude, Cohere Command, Meta LLama 2, Mistral, and Stability Stable Diffusion)
 + **[Anthropic](#integrate-the-module-with-anthropic)**
 + **[Cohere](#integrate-the-module-with-cohere)**
 + **[Mistral](#integrate-the-module-with-mistral)**
@@ -639,6 +639,31 @@ print(response.get("parsedBody"))
 ```
 
 ## Examples with Anthropic
+
+### Chat Example
+
+```python
+from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
+from reconify import reconifyAnthropicHandler
+
+anthropic = Anthropic(api_key = 'YOUR_ANTHROPIC_KEY')
+
+reconifyAnthropicHandler.config(anthropic, 'Your_App_Key', 'Your_Api_Key')
+
+reconifyAnthropicHandler.setUser({
+   "userId": "12345",
+   "firstName": "Jim",
+   "lastName": "Smith",
+})
+
+response = anthropic.messages.create(
+    model="claude-2.1",
+    max_tokens=300,
+    messages = [
+      {"role": "user", "content" : "Tell me a cat joke"}
+    ]
+)
+```
 
 ### Completions Example
 

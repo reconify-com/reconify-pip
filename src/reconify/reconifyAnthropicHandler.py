@@ -6,7 +6,7 @@ import uuid
 #constants
 RECONIFY_TRACKER = 'https://track.reconify.com/track'
 RECONIFY_UPLOADER = 'https://track.reconify.com/upload'
-RECONIFY_MODULE_VERSION = '2.3.1'
+RECONIFY_MODULE_VERSION = '3.0.0'
 
 #private class
 class __CompletionEncoder(json.JSONEncoder):
@@ -93,9 +93,19 @@ def config (anthropic, appKey, apiKey, **options):
         tsIn = round(time.time()*1000)
         response = anthropic.completions.originalCreate(*args, **kwargs)
         tsOut = round(time.time()*1000)
-        __logInteraction(kwargs, response, tsIn, tsOut, 'chat')
+        __logInteraction(kwargs, response, tsIn, tsOut, 'completion')
         return response 
     anthropic.completions.create = __reconifyCompletion
+
+    #override chat create
+    anthropic.messages.originalCreate = anthropic.messages.create
+    def __reconifyChat(*args, **kwargs):
+        tsIn = round(time.time()*1000)
+        response = anthropic.messages.originalCreate(*args, **kwargs)
+        tsOut = round(time.time()*1000)
+        __logInteraction(kwargs, response, tsIn, tsOut, 'chat')
+        return response 
+    anthropic.messages.create = __reconifyChat
 
 def setUser(user):
     global __user

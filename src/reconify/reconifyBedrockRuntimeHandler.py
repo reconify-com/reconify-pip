@@ -6,7 +6,7 @@ import uuid
 #constants
 RECONIFY_TRACKER = 'https://track.reconify.com/track'
 RECONIFY_UPLOADER = 'https://track.reconify.com/upload'
-RECONIFY_MODULE_VERSION = '2.3.1'
+RECONIFY_MODULE_VERSION = '3.0.0'
 
 #private variables 
 __appKey = None
@@ -187,7 +187,7 @@ def config (bedrock, appKey, apiKey, **options):
         if 'modelId' in kwargs:
             model = kwargs.get('modelId')
         
-        if model.startswith('anthropic.') or model.startswith('ai21.') or model.startswith('cohere.') or model.startswith('meta.') or model.startswith('amazon.titan-text'):
+        if model.startswith('anthropic.') or model.startswith('ai21.') or model.startswith('cohere.') or model.startswith('meta.') or model.startswith('mistral.') or model.startswith('amazon.titan-text'):
             body = json.loads(response.get("body").read().decode('utf-8'))
             response["parsedBody"] = body
             __logInteraction(kwargs, response, tsIn, tsOut, 'chat')
